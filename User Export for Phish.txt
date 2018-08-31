@@ -1,0 +1,1 @@
+Get-ADUser -filter * -properties EmailAddress, GivenName, Surname, Telephonenumber, Title | sort-object name | select-object Name, EmailAddress, GivenName, Surname, Telephonenumber, Title | Export-csv -path c:\temp\user-info.csv

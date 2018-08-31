@@ -1,0 +1,4 @@
+Get-ADGroupMember -identity "Domain Admins" -recursive | get-aduser -properties cn, displayname | format-table -auto cn, displayname | Out-File "PATH" 
+
+#If you wish to add additional attributes, you can see all that are available through this PowerShell command (substitute the account name for <user>)
+Get-ADUser <user> -Properties *

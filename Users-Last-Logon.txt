@@ -1,0 +1,24 @@
+$NumDays = 30
+ $LogDir = "C:\IIT\Users-Last-Logon.csv"
+
+$currentDate = [System.DateTime]::Now
+ $currentDateUtc = $currentDate.ToUniversalTime()
+ $lltstamplimit = $currentDateUtc.AddDays(- $NumDays)
+ $lltIntLimit = $lltstampLimit.ToFileTime()
+ $adobjroot = [adsi]''
+ $objstalesearcher = New-Object System.DirectoryServices.DirectorySearcher($adobjroot)
+ $objstalesearcher.filter = "(&(objectCategory=person)(objectClass=user)(lastLogonTimeStamp<=" + $lltIntLimit + "))"
+
+$users = $objstalesearcher.findall() | select `
+ @{e={$_.properties.cn};n='Display Name'},`
+ @{e={$_.properties.samaccountname};n='Username'},`
+ @{e={[datetime]::FromFileTimeUtc([int64]$_.properties.lastlogontimestamp[0])};n='Last Logon'},`
+ @{e={[string]$adspath=$_.properties.adspath;$account=[ADSI]$adspath;$account.psbase.invokeget('AccountDisabled')};n='Account Is Disabled'}
+
+$users | Export-CSV -NoType $LogDir
+
+
+Send-MailMessage -From "Security <donotreply@daklex.com>" -To "administrator <administrator@daklex.com>", "matt <msmith@integrityky.com>" -Subject "Inactive Accounts" -Body "Please see the attached list of Inactive Accounts. Accounts not being actively used should be disabled or deleted." -Attachments "C:\IIT\Users-Last-Logon.csv" -Priority High -dno onSuccess, onFailure -SmtpServer "dak-exch2010.dak.local"
+
+
+
